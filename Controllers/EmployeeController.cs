@@ -72,23 +72,23 @@ namespace Workforce.Controllers
         }
 
         // GET: Employee/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            EmployeeEdit model = new EmployeeEdit(_context);
+            EmployeeEditViewModel model = new EmployeeEditViewModel(_context, id);
 
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            // Get the employee record and assing to model
             model.Employee = await _context.Employee
                     .SingleOrDefaultAsync(m => m.EmployeeId == id);
+
+            // Return 404 if the employee was not found
             if (model.Employee == null)
             {
                 return NotFound();
             }
+
+            // Build a SelectList for displaying departments
             ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", model.Employee.DepartmentId);
-            ViewData["TrainingId"] = new SelectList(_context.Set<Training>(), "TrainingId", "Title");
+
             return View(model);
         }
 
@@ -97,7 +97,7 @@ namespace Workforce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, EmployeeEdit model)
+        public async Task<IActionResult> Edit(int id, EmployeeEditViewModel model)
         {
             if (id != model.Employee.EmployeeId)
             {
@@ -106,9 +106,33 @@ namespace Workforce.Controllers
 
             if (ModelState.IsValid)
             {
+                
                 try
                 {
+                    // Update employee information
                     _context.Update(model.Employee);
+
+                    // Remove all employee training sessions first
+                    List<EmployeeTraining> sessions = await _context.EmployeeTraining
+                        .Where(t => t.EmployeeId == id).ToListAsync();
+
+                    foreach (var session in sessions)
+                    {
+                        _context.Remove(session);
+                    }
+
+                    // Add selected training sessions
+                    if (model.SelectedSessions.Count > 0)
+                    {
+                        foreach (int sessionId in model.SelectedSessions)
+                        {
+                            EmployeeTraining session = new EmployeeTraining(){
+                                EmployeeId = id,
+                                TrainingId = sessionId
+                            };
+                             await _context.AddAsync(session);
+                        }
+                    }
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
