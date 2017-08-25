@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace Workforce.Models.ViewModels
 
         public int DeparmentId { get; set; }
 
+        [Display(Name="Training Sessions")]
         public MultiSelectList Sessions { get; private set; }
 
         public List<int> SelectedSessions { get; set; }
@@ -25,6 +27,7 @@ namespace Workforce.Models.ViewModels
                 .Where(t => t.StartDate > DateTime.Now)
                 .ToList();
 
+            // Build a list of training program ids to pre-select in the multiselect element
             var goingToList = (
               from t in ctx.Training
               join et in ctx.EmployeeTraining on t.TrainingId equals et.TrainingId
@@ -32,13 +35,7 @@ namespace Workforce.Models.ViewModels
               select t.TrainingId
             ).ToList();
 
-            // SelectList goingTo = new SelectList(goingToList, "TrainingId", "Title");
-                
-
-
             this.Sessions = new MultiSelectList(availableSessions, "TrainingId", "Title", goingToList);
         }
-
-
     }
 }
