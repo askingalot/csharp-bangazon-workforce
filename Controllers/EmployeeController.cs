@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Workforce.Models;
+using Workforce.Models.ViewModels;
 
 namespace Workforce.Controllers
 {
@@ -35,6 +37,7 @@ namespace Workforce.Controllers
 
             var employee = await _context.Employee
                 .Include(e => e.Department)
+                .Include(e => e.TrainingSessions)
                 .SingleOrDefaultAsync(m => m.EmployeeId == id);
             if (employee == null)
             {
@@ -71,18 +74,22 @@ namespace Workforce.Controllers
         // GET: Employee/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            EmployeeEdit model = new EmployeeEdit(_context);
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            var employee = await _context.Employee.SingleOrDefaultAsync(m => m.EmployeeId == id);
-            if (employee == null)
+            model.Employee = await _context.Employee
+                    .SingleOrDefaultAsync(m => m.EmployeeId == id);
+            if (model.Employee == null)
             {
                 return NotFound();
             }
-            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", employee.DepartmentId);
-            return View(employee);
+            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", model.Employee.DepartmentId);
+            ViewData["TrainingId"] = new SelectList(_context.Set<Training>(), "TrainingId", "Title");
+            return View(model);
         }
 
         // POST: Employee/Edit/5
@@ -90,9 +97,9 @@ namespace Workforce.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EmployeeId,FirstName,LastName,DepartmentId")] Employee employee)
+        public async Task<IActionResult> Edit(int id, EmployeeEdit model)
         {
-            if (id != employee.EmployeeId)
+            if (id != model.Employee.EmployeeId)
             {
                 return NotFound();
             }
@@ -101,12 +108,12 @@ namespace Workforce.Controllers
             {
                 try
                 {
-                    _context.Update(employee);
+                    _context.Update(model.Employee);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EmployeeExists(employee.EmployeeId))
+                    if (!EmployeeExists(model.Employee.EmployeeId))
                     {
                         return NotFound();
                     }
@@ -117,8 +124,8 @@ namespace Workforce.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", employee.DepartmentId);
-            return View(employee);
+            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", model.Employee.DepartmentId);
+            return View(model.Employee);
         }
 
         // GET: Employee/Delete/5
