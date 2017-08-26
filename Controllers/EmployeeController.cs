@@ -86,9 +86,6 @@ namespace Workforce.Controllers
                 return NotFound();
             }
 
-            // Build a SelectList for displaying departments
-            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", model.Employee.DepartmentId);
-
             return View(model);
         }
 
@@ -106,7 +103,6 @@ namespace Workforce.Controllers
 
             if (ModelState.IsValid)
             {
-                
                 try
                 {
                     // Update employee information
@@ -148,8 +144,8 @@ namespace Workforce.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DepartmentId"] = new SelectList(_context.Set<Department>(), "DepartmentId", "Name", model.Employee.DepartmentId);
-            return View(model.Employee);
+
+            return View(model);
         }
 
         // GET: Employee/Delete/5

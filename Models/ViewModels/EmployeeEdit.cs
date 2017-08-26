@@ -12,16 +12,34 @@ namespace Workforce.Models.ViewModels
     {
         public Employee Employee { get; set; }
 
-        public int DeparmentId { get; set; }
-
+        // Property to hold all training sessions for selection on edit form
         [Display(Name="Training Sessions")]
         public MultiSelectList Sessions { get; private set; }
 
+        [Display(Name="Current Department")]
+        public List<SelectListItem> Departments { get; private set; }
+
+        // This will accept the selected training sessions on form POST
         public List<int> SelectedSessions { get; set; }
 
         public EmployeeEditViewModel() {}
         public EmployeeEditViewModel(WorkforceContext ctx, int employeeId)
         {
+            // Select list for departments
+            this.Departments = ctx.Department
+                .OrderBy(l => l.Name)
+                .AsEnumerable()
+                .Select(li => new SelectListItem { 
+                    Text = li.Name,
+                    Value = li.DepartmentId.ToString()
+                }).ToList();
+
+            // Add a prompt so that the select isn't blank for a new employee
+            this.Departments.Insert(0, new SelectListItem { 
+                Text = "Choose department...",
+                Value = "0"
+            }); 
+
             // Build a list of training sessions that begin in the future
             List<Training> availableSessions = ctx.Training
                 .Where(t => t.StartDate > DateTime.Now)

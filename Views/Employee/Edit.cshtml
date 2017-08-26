@@ -25,8 +25,15 @@
             </div>
             <div class="form-group">
                 <label asp-for="Employee.DepartmentId" class="control-label"></label>
-                <select asp-for="Employee.DepartmentId" class="form-control" asp-items="ViewBag.DepartmentId"></select>
+                <select asp-for="Employee.DepartmentId" class="form-control" asp-items="Model.Departments"></select>
                 <span asp-validation-for="Employee.DepartmentId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Departments" class="control-label"></label>
+                @Html.DropDownListFor(m => m.Departments, 
+                                 Model.Departments,
+                                 new { @class="form-control" })
             </div>
             <div class="form-group">
                 <label asp-for="Sessions" class="control-label"></label>
