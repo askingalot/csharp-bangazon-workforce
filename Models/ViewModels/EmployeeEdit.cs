@@ -34,7 +34,7 @@ namespace Workforce.Models.ViewModels
                     Value = li.DepartmentId.ToString()
                 }).ToList();
 
-            // Add a prompt so that the select isn't blank for a new employee
+            // Add a prompt so that the <select> element isn't blank for a new employee
             this.Departments.Insert(0, new SelectListItem { 
                 Text = "Choose department...",
                 Value = "0"
@@ -53,6 +53,13 @@ namespace Workforce.Models.ViewModels
               select t.TrainingId
             ).ToList();
 
+            /*
+                This MultiSelectList constructor takes 4 arguments. Here's what they all mean.
+                    1. The collection that store all items I want in the <select> element
+                    2. The column to use for the `value` attribute
+                    3. The column to use for display text
+                    4. A list of integers for ones to be pre-selected
+             */
             this.Sessions = new MultiSelectList(availableSessions, "TrainingId", "Title", goingToList);
         }
     }
